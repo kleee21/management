@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Keuangan Keluarga</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style/style.css">
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <header class="bg-white shadow-md py-4">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">Manajemen Keluarga</h1>
+            <nav>
+                <button id="show-pengeluaran" class="px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition duration-300">
+                    Pengeluaran
+                </button>
+                <button id="show-status" class="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-200 transition duration-300">
+                    Status Anggota
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <div id="pengeluaran-container" class="space-y-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 animate-fade-in-up">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">Catat Pengeluaran Harian 💸</h2>
+                <form id="pengeluaran-form" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Anggota Keluarga</label>
+                            <select id="anggota" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 transition duration-300" required>
+                                <option value="Ayah">Ayah</option>
+                                <option value="Ibu">Ibu</option>
+                                <option value="Anak">Anak</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Kategori</label>
+                            <select id="kategori" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 transition duration-300" required>
+                                <option value="Makanan">Makanan 🍔</option>
+                                <option value="Transportasi">Transportasi 🚗</option>
+                                <option value="Belanja">Belanja 🛍️</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Nominal (Rp)</label>
+                            <input type="number" id="nominal" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 transition duration-300" placeholder="Contoh: 50000" required>
+                        </div>
+                        <div class="md:col-span-2 lg:col-span-3">
+                            <label class="block text-sm font-medium text-gray-700">Deskripsi</label>
+                            <input type="text" id="deskripsi" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 transition duration-300" placeholder="Contoh: Beli sayur dan buah" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105">
+                        Simpan Pengeluaran
+                    </button>
+                </form>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6 animate-fade-in-up">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Riwayat Pengeluaran</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Anggota</th>
+                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal</th>
+                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pengeluaran-list" class="bg-white divide-y divide-gray-200">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-container" class="hidden space-y-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 animate-fade-in-up">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">Status Anggota Keluarga 🏠</h2>
+                <div id="status-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="status-card bg-white rounded-lg shadow-md p-6 flex flex-col items-center space-y-4 transform transition-all duration-300 ring-2 ring-green-500">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-4xl">🏠</span>
+                            <p class="text-xl font-bold text-gray-800">Ayah</p>
+                        </div>
+                        <p class="text-lg text-gray-600">Di Dalam Rumah</p>
+                        <button onclick="toggleStatus('Ayah')" class="w-full py-2 rounded-md font-semibold transition-colors duration-300 bg-red-500 text-white hover:bg-red-600">
+                            Keluar Rumah
+                        </button>
+                    </div>
+                    <div class="status-card bg-white rounded-lg shadow-md p-6 flex flex-col items-center space-y-4 transform transition-all duration-300 ring-2 ring-green-500">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-4xl">🏠</span>
+                            <p class="text-xl font-bold text-gray-800">Ibu</p>
+                        </div>
+                        <p class="text-lg text-gray-600">Di Dalam Rumah</p>
+                        <button onclick="toggleStatus('Ibu')" class="w-full py-2 rounded-md font-semibold transition-colors duration-300 bg-red-500 text-white hover:bg-red-600">
+                            Keluar Rumah
+                        </button>
+                    </div>
+                    <div class="status-card bg-white rounded-lg shadow-md p-6 flex flex-col items-center space-y-4 transform transition-all duration-300 ring-2 ring-green-500">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-4xl">🏠</span>
+                            <p class="text-xl font-bold text-gray-800">Anak</p>
+                        </div>
+                        <p class="text-lg text-gray-600">Di Dalam Rumah</p>
+                        <button onclick="toggleStatus('Anak')" class="w-full py-2 rounded-md font-semibold transition-colors duration-300 bg-red-500 text-white hover:bg-red-600">
+                            Keluar Rumah
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script/script.js" type="module"></script>
+</body>
+</html>
