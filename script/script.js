@@ -147,29 +147,52 @@ window.deleteExpense = (id) => {
     }
 };
 
-// --- Logika Status Anggota ---
+// --- Logika Status Anggota & Tambah Anggota ---
 const statusGrid = document.getElementById('status-grid');
+const anggotaSelect = document.getElementById('anggota');
+const tambahAnggotaForm = document.getElementById('tambah-anggota-form');
+const anggotaBaruInput = document.getElementById('anggota-baru-input');
+const anggotaRef = ref(database, 'anggotaKeluarga');
 const statusRef = ref(database, 'statusAnggota');
-const anggotaKeluarga = ['Ayah', 'Ibu', 'Anak'];
 
-// Membaca data real-time dari database untuk status
-onValue(statusRef, (snapshot) => {
-    const statusData = snapshot.val();
+// Fungsi untuk memperbarui dropdown dan status grid
+const updateUI = (anggotaList) => {
+    // Bersihkan dropdown dan status grid
+    anggotaSelect.innerHTML = '';
     if (statusGrid) {
         statusGrid.innerHTML = '';
-        anggotaKeluarga.forEach(anggota => {
-            const status = statusData && statusData[anggota] && statusData[anggota].status ? statusData[anggota].status : 'Di Dalam';
-            const reason = statusData && statusData[anggota] && statusData[anggota].reason ? statusData[anggota].reason : '';
-            
+    }
+
+    // Isi ulang dropdown
+    anggotaList.forEach(anggota => {
+        const option = document.createElement('option');
+        option.value = anggota;
+        option.textContent = anggota;
+        anggotaSelect.appendChild(option);
+    });
+
+    // Buat ulang status grid
+    anggotaList.forEach(anggota => {
+        onValue(ref(database, `statusAnggota/${anggota}`), (snapshot) => {
+            const statusData = snapshot.val();
+            const status = statusData && statusData.status ? statusData.status : 'Di Dalam';
+            const reason = statusData && statusData.reason ? statusData.reason : '';
+
             const ringColor = status === 'Di Dalam' ? 'ring-[var(--color-status-in)]' : 'ring-[var(--color-status-out)]';
-            const buttonClass = status === 'Di Dalam' 
-                ? 'bg-[var(--color-status-out)] text-white hover:bg-[var(--color-status-out)]' 
+            const buttonClass = status === 'Di Dalam'
+                ? 'bg-[var(--color-status-out)] text-white hover:bg-[var(--color-status-out)]'
                 : 'bg-[var(--color-status-in)] text-white hover:bg-[var(--color-status-in)]';
 
-            const card = document.createElement('div');
-            card.className = `status-card bg-[var(--color-bg-secondary)] rounded-2xl shadow-lg p-6 flex flex-col items-center space-y-4 transform transition-all duration-300 ring-2 ${ringColor}`;
+            let existingCard = document.getElementById(`status-card-${anggota.replace(/\s+/g, '-')}`);
+            if (!existingCard) {
+                existingCard = document.createElement('div');
+                existingCard.id = `status-card-${anggota.replace(/\s+/g, '-')}`;
+                existingCard.className = `status-card bg-[var(--color-bg-secondary)] rounded-2xl shadow-lg p-6 flex flex-col items-center space-y-4 transform transition-all duration-300 ring-2 ${ringColor}`;
+                statusGrid.appendChild(existingCard);
+            }
 
-            card.innerHTML = `
+            existingCard.className = `status-card bg-[var(--color-bg-secondary)] rounded-2xl shadow-lg p-6 flex flex-col items-center space-y-4 transform transition-all duration-300 ring-2 ${ringColor}`;
+            existingCard.innerHTML = `
                 <div class="flex items-center space-x-2">
                     <span class="text-4xl">${status === 'Di Dalam' ? '🏠' : '🚗'}</span>
                     <p class="text-xl font-bold text-[var(--color-text-primary)]">${anggota}</p>
@@ -179,11 +202,101 @@ onValue(statusRef, (snapshot) => {
                 <button onclick="toggleStatus('${anggota}')" class="w-full py-2 rounded-xl font-semibold transition-colors duration-300 ${buttonClass}">
                     ${status === 'Di Dalam' ? 'Keluar Rumah' : 'Masuk Rumah'}
                 </button>
+                <button onclick="deleteMember('${anggota}')" class="text-xs text-red-500 hover:text-red-700 mt-2">
+                    Hapus Anggota
+                </button>
             `;
-            statusGrid.appendChild(card);
+        });
+    });
+};
+
+
+// Tambah anggota keluarga baru
+if (tambahAnggotaForm) {
+    tambahAnggotaForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const newMemberName = anggotaBaruInput.value.trim();
+        if (newMemberName) {
+            get(anggotaRef).then((snapshot) => {
+                const anggotaList = snapshot.val() || ['Ayah', 'Ibu', 'Anak'];
+                if (!anggotaList.includes(newMemberName)) {
+                    const updatedList = [...anggotaList, newMemberName];
+                    set(anggotaRef, updatedList);
+                    anggotaBaruInput.value = '';
+                    alert(`${newMemberName} berhasil ditambahkan!`);
+                } else {
+                    alert(`${newMemberName} sudah ada dalam daftar.`);
+                }
+            }).catch(error => {
+                console.error("Gagal menambahkan anggota: ", error);
+            });
+        }
+    });
+}
+
+// Membaca daftar anggota dari database
+onValue(anggotaRef, (snapshot) => {
+    const anggotaList = snapshot.val();
+    if (anggotaList) {
+        updateUI(anggotaList);
+    } else {
+        // Jika tidak ada data, inisialisasi dengan daftar default
+        const defaultMembers = ['Ayah', 'Ibu', 'Anak'];
+        set(anggotaRef, defaultMembers).then(() => {
+            updateUI(defaultMembers);
         });
     }
 });
+
+// Fungsi untuk mengubah status
+window.toggleStatus = async (anggota) => {
+    const anggotaStatusRef = ref(database, `statusAnggota/${anggota}`);
+    try {
+        const snapshot = await get(anggotaStatusRef);
+        const currentData = snapshot.val();
+        const currentStatus = currentData && currentData.status ? currentData.status : 'Di Dalam';
+
+        let newStatus;
+        let newReason = '';
+
+        if (currentStatus === 'Di Dalam') {
+            const reasonInput = prompt('Anda keluar rumah. Apa alasannya?');
+            if (reasonInput === null || reasonInput.trim() === '') {
+                alert('Alasan tidak boleh kosong!');
+                return;
+            } else {
+                newStatus = 'Di Luar';
+                newReason = reasonInput.trim();
+            }
+        } else {
+            newStatus = 'Di Dalam';
+            newReason = '';
+        }
+
+        await set(anggotaStatusRef, {
+            status: newStatus,
+            reason: newReason
+        });
+        console.log("Status berhasil diperbarui!");
+    } catch (error) {
+        console.error("Gagal memperbarui status: ", error);
+        alert("Gagal memperbarui status. Periksa koneksi atau konfigurasi Firebase.");
+    }
+};
+
+// Fungsi untuk menghapus anggota
+window.deleteMember = (anggota) => {
+    if (confirm(`Apakah Anda yakin ingin menghapus ${anggota}?`)) {
+        get(anggotaRef).then((snapshot) => {
+            const anggotaList = snapshot.val() || [];
+            const updatedList = anggotaList.filter(item => item !== anggota);
+            set(anggotaRef, updatedList).then(() => {
+                remove(ref(database, `statusAnggota/${anggota}`));
+                alert(`${anggota} berhasil dihapus.`);
+            });
+        });
+    }
+};
 
 // --- Theme Toggler Logic ---
 const themeToggleBtn = document.getElementById('theme-toggle');
