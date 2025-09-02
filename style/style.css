@@ -1,5 +1,36 @@
 /* main.css */
 
+/* Add Poppins font for a more modern look */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+:root {
+    /* Dark Theme (Default) */
+    --color-bg-primary: #0A192F;
+    --color-bg-secondary: #1A314B;
+    --color-bg-input: #112240;
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #a0a0a0;
+    --color-border: #444a5d;
+    --color-accent-primary: #00B7C7; /* Cyan */
+    --color-accent-secondary: #008C99; /* Darker Cyan */
+    --color-status-in: #06D6A0; /* Teal */
+    --color-status-out: #E76F51; /* Coral */
+}
+
+.light-theme {
+    /* Light Theme */
+    --color-bg-primary: #F0F2F5;
+    --color-bg-secondary: #ffffff;
+    --color-bg-input: #E9ECEF;
+    --color-text-primary: #1F2937;
+    --color-text-secondary: #6B7280;
+    --color-border: #D1D5DB;
+    --color-accent-primary: #3B82F6; /* Blue */
+    --color-accent-secondary: #2563EB; /* Darker Blue */
+    --color-status-in: #22C55E; /* Green */
+    --color-status-out: #EF4444; /* Red */
+}
+
 /* Define Keyframes for Animations */
 @keyframes fadeIn {
     from {
@@ -32,17 +63,59 @@
 
 /* Custom styles for status cards */
 .status-card {
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, ring-color 0.3s ease-in-out;
 }
 
 .status-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
 }
 
-/* Penyesuaian layout untuk tampilan responsif */
-@media (min-width: 768px) {
-    .md\\:grid-cols-3 {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+/* --- Responsive Table Styles for Mobile --- */
+@media (max-width: 1023px) {
+    /* Hide the table headers on small screens */
+    .responsive-table thead, .responsive-table tr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+    }
+    
+    /* Make each row a block element */
+    .responsive-table-row {
+        display: block;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        background-color: var(--color-bg-secondary);
+        border: 1px solid var(--color-border);
+    }
+
+    /* Style the table cells as block elements */
+    .responsive-table-cell {
+        display: block;
+        padding: 0.5rem 0;
+        position: relative;
+        padding-left: 35%; /* Space for the label */
+    }
+
+    /* Use data-label attribute to create labels for each cell */
+    .responsive-table-cell:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 30%;
+        padding-right: 1rem;
+        text-align: left;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--color-text-secondary);
+        font-size: 0.75rem;
     }
 }
