@@ -23,34 +23,35 @@ const pengeluaranContainer = document.getElementById('pengeluaran-container');
 const statusContainer = document.getElementById('status-container');
 const pengeluaranBtn = document.getElementById('show-pengeluaran');
 const statusBtn = document.getElementById('show-status');
+const desktopPengeluaranList = document.getElementById('pengeluaran-list-desktop');
+const mobilePengeluaranList = document.getElementById('pengeluaran-list-mobile');
+
+// Helper function for button styling
+const setActiveButton = (activeButton, inactiveButton) => {
+    activeButton.classList.add('bottom-nav-active');
+    inactiveButton.classList.remove('bottom-nav-active');
+};
 
 // Atur tampilan awal
 pengeluaranContainer.classList.remove('hidden');
-pengeluaranBtn.classList.add('bg-blue-600', 'text-white');
-statusBtn.classList.add('bg-gray-200', 'text-gray-700');
+statusContainer.classList.add('hidden');
+setActiveButton(pengeluaranBtn, statusBtn);
 
 // Logika pergantian halaman
 pengeluaranBtn.addEventListener('click', () => {
     pengeluaranContainer.classList.remove('hidden');
     statusContainer.classList.add('hidden');
-    pengeluaranBtn.classList.remove('bg-gray-200', 'text-gray-700');
-    pengeluaranBtn.classList.add('bg-blue-600', 'text-white');
-    statusBtn.classList.remove('bg-blue-600', 'text-white');
-    statusBtn.classList.add('bg-gray-200', 'text-gray-700');
+    setActiveButton(pengeluaranBtn, statusBtn);
 });
 
 statusBtn.addEventListener('click', () => {
     statusContainer.classList.remove('hidden');
     pengeluaranContainer.classList.add('hidden');
-    statusBtn.classList.remove('bg-gray-200', 'text-gray-700');
-    statusBtn.classList.add('bg-blue-600', 'text-white');
-    pengeluaranBtn.classList.remove('bg-blue-600', 'text-white');
-    pengeluaranBtn.classList.add('bg-gray-200', 'text-gray-700');
+    setActiveButton(statusBtn, pengeluaranBtn);
 });
 
 // --- Logika Pengeluaran ---
 const pengeluaranForm = document.getElementById('pengeluaran-form');
-const pengeluaranList = document.getElementById('pengeluaran-list');
 const expensesRef = ref(database, 'pengeluaran');
 
 // Menambah data ke database saat formulir di-submit
@@ -87,26 +88,54 @@ if (pengeluaranForm) {
 // Membaca data real-time dari database
 onValue(expensesRef, (snapshot) => {
     const expenses = snapshot.val();
-    pengeluaranList.innerHTML = '';
+    desktopPengeluaranList.innerHTML = '';
+    mobilePengeluaranList.innerHTML = '';
+    
     if (expenses) {
         const sortedExpenses = Object.entries(expenses).sort(([, a], [, b]) => {
             return new Date(b.tanggal) - new Date(a.tanggal);
         });
 
         sortedExpenses.forEach(([id, expense]) => {
+            // Desktop Table View
             const row = document.createElement('tr');
-            row.className = 'bg-white hover:bg-gray-50 transition duration-300';
+            row.className = 'bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-input)] transition duration-300';
             row.innerHTML = `
-                <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-500">${expense.tanggal}</td>
-                <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-500">${expense.anggota}</td>
-                <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-500">${expense.kategori}</td>
-                <td class="px-2 py-2 whitespace-nowrap text-xs font-normal text-gray-900">Rp ${expense.nominal.toLocaleString('id-ID')}</td>
-                <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-500">${expense.deskripsi}</td>
+                <td class="px-2 py-2 whitespace-nowrap text-xs text-[var(--color-text-secondary)]">${expense.tanggal}</td>
+                <td class="px-2 py-2 whitespace-nowrap text-xs text-[var(--color-text-secondary)]">${expense.anggota}</td>
+                <td class="px-2 py-2 whitespace-nowrap text-xs text-[var(--color-text-secondary)]">${expense.kategori}</td>
+                <td class="px-2 py-2 whitespace-nowrap text-xs font-normal text-[var(--color-text-primary)]">Rp ${expense.nominal.toLocaleString('id-ID')}</td>
+                <td class="px-2 py-2 whitespace-nowrap text-xs text-[var(--color-text-secondary)]">${expense.deskripsi}</td>
                 <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-medium">
                     <button class="text-red-600 hover:text-red-900" onclick="deleteExpense('${id}')">Hapus</button>
                 </td>
             `;
-            pengeluaranList.appendChild(row);
+            desktopPengeluaranList.appendChild(row);
+
+            // Mobile Card View
+            const card = document.createElement('div');
+            card.className = 'responsive-table-row';
+            card.innerHTML = `
+                <div class="responsive-table-cell" data-label="Tanggal">
+                    <span class="text-sm font-bold">${expense.tanggal}</span>
+                </div>
+                <div class="responsive-table-cell" data-label="Anggota">
+                    <span class="text-sm text-[var(--color-text-secondary)]">${expense.anggota}</span>
+                </div>
+                <div class="responsive-table-cell" data-label="Kategori">
+                    <span class="text-sm text-[var(--color-text-secondary)]">${expense.kategori}</span>
+                </div>
+                <div class="responsive-table-cell" data-label="Nominal">
+                    <span class="text-sm font-bold text-[var(--color-text-primary)]">Rp ${expense.nominal.toLocaleString('id-ID')}</span>
+                </div>
+                <div class="responsive-table-cell" data-label="Deskripsi">
+                    <span class="text-sm text-[var(--color-text-secondary)]">${expense.deskripsi}</span>
+                </div>
+                <div class="responsive-table-cell" data-label="Aksi">
+                    <button class="text-red-600 hover:text-red-900 text-sm font-medium" onclick="deleteExpense('${id}')">Hapus</button>
+                </div>
+            `;
+            mobilePengeluaranList.appendChild(card);
         });
     }
 });
@@ -131,18 +160,23 @@ onValue(statusRef, (snapshot) => {
         anggotaKeluarga.forEach(anggota => {
             const status = statusData && statusData[anggota] && statusData[anggota].status ? statusData[anggota].status : 'Di Dalam';
             const reason = statusData && statusData[anggota] && statusData[anggota].reason ? statusData[anggota].reason : '';
+            
+            const ringColor = status === 'Di Dalam' ? 'ring-[var(--color-status-in)]' : 'ring-[var(--color-status-out)]';
+            const buttonClass = status === 'Di Dalam' 
+                ? 'bg-[var(--color-status-out)] text-white hover:bg-[var(--color-status-out)]' 
+                : 'bg-[var(--color-status-in)] text-white hover:bg-[var(--color-status-in)]';
 
             const card = document.createElement('div');
-            card.className = `status-card bg-white rounded-lg shadow-md p-6 flex flex-col items-center space-y-4 transform transition-all duration-300 ${status === 'Di Dalam' ? 'ring-2 ring-green-500' : 'ring-2 ring-red-500'}`;
+            card.className = `status-card bg-[var(--color-bg-secondary)] rounded-2xl shadow-lg p-6 flex flex-col items-center space-y-4 transform transition-all duration-300 ring-2 ${ringColor}`;
 
             card.innerHTML = `
                 <div class="flex items-center space-x-2">
                     <span class="text-4xl">${status === 'Di Dalam' ? '🏠' : '🚗'}</span>
-                    <p class="text-xl font-bold text-gray-800">${anggota}</p>
+                    <p class="text-xl font-bold text-[var(--color-text-primary)]">${anggota}</p>
                 </div>
-                <p class="text-lg text-gray-600">${status === 'Di Dalam' ? 'Di Dalam Rumah' : `Sedang di Luar`}</p>
-                ${reason ? `<p class="text-sm text-gray-500 italic">(${reason})</p>` : ''}
-                <button onclick="toggleStatus('${anggota}')" class="w-full py-2 rounded-md font-semibold transition-colors duration-300 ${status === 'Di Dalam' ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-green-500 text-white hover:bg-green-600'}">
+                <p class="text-lg text-[var(--color-text-secondary)]">${status === 'Di Dalam' ? 'Di Dalam Rumah' : `Sedang di Luar`}</p>
+                ${reason ? `<p class="text-sm text-[var(--color-text-secondary)] italic">(${reason})</p>` : ''}
+                <button onclick="toggleStatus('${anggota}')" class="w-full py-2 rounded-xl font-semibold transition-colors duration-300 ${buttonClass}">
                     ${status === 'Di Dalam' ? 'Keluar Rumah' : 'Masuk Rumah'}
                 </button>
             `;
@@ -151,38 +185,32 @@ onValue(statusRef, (snapshot) => {
     }
 });
 
-// Fungsi untuk mengubah status dengan alasan
-window.toggleStatus = async (anggota) => {
-    const anggotaRef = ref(database, `statusAnggota/${anggota}`);
-    try {
-        const snapshot = await get(anggotaRef);
-        const currentData = snapshot.val();
-        const currentStatus = currentData && currentData.status ? currentData.status : 'Di Dalam';
+// --- Theme Toggler Logic ---
+const themeToggleBtn = document.getElementById('theme-toggle');
+const body = document.body;
+const moonIcon = document.getElementById('moon-icon');
+const sunIcon = document.getElementById('sun-icon');
 
-        let newStatus;
-        let newReason = '';
-
-        if (currentStatus === 'Di Dalam') {
-            const reasonInput = prompt('Anda keluar rumah. Apa alasannya?');
-            if (reasonInput === null || reasonInput.trim() === '') {
-                alert('Alasan tidak boleh kosong!');
-                return;
-            } else {
-                newStatus = 'Di Luar';
-                newReason = reasonInput.trim();
-            }
-        } else {
-            newStatus = 'Di Dalam';
-            newReason = '';
-        }
-
-        await set(anggotaRef, {
-            status: newStatus,
-            reason: newReason
-        });
-        console.log("Status berhasil diperbarui!");
-    } catch (error) {
-        console.error("Gagal memperbarui status: ", error);
-        alert("Gagal memperbarui status. Periksa koneksi atau konfigurasi Firebase.");
+// Function to apply the stored theme on page load
+const applyTheme = (theme) => {
+    if (theme === 'light') {
+        body.classList.add('light-theme');
+        moonIcon.classList.add('hidden');
+        sunIcon.classList.remove('hidden');
+    } else {
+        body.classList.remove('light-theme');
+        moonIcon.classList.remove('hidden');
+        sunIcon.classList.add('hidden');
     }
 };
+
+// Get theme from localStorage or default to 'dark'
+const savedTheme = localStorage.getItem('theme') || 'dark';
+applyTheme(savedTheme);
+
+// Toggle theme on button click
+themeToggleBtn.addEventListener('click', () => {
+    const newTheme = body.classList.contains('light-theme') ? 'dark' : 'light';
+    localStorage.setItem('theme', newTheme);
+    applyTheme(newTheme);
+});
