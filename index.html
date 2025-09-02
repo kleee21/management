@@ -6,40 +6,55 @@
     <title>Manajemen Keuangan Keluarga</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .bottom-nav-active {
+            color: var(--color-accent-primary);
+        }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="theme-dark flex flex-col min-h-screen">
 
-    <header class="bg-white shadow-md py-4">
+    <header class="bg-[var(--color-bg-secondary)] shadow-sm py-6">
         <div class="container mx-auto px-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-800">Manajemen Keluarga</h1>
-            <nav>
-                <button id="show-pengeluaran" class="px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition duration-300">
-                    Pengeluaran
-                </button>
-                <button id="show-status" class="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-200 transition duration-300">
-                    Status Anggota
-                </button>
-            </nav>
+            <div class="flex items-center space-x-2">
+                <h1 class="text-2xl font-bold text-[var(--color-text-primary)]">Manajemen Keluarga</h1>
+                <span class="text-2xl">🏠</span>
+            </div>
+            <button id="theme-toggle" class="text-[var(--color-text-primary)] hover:text-[var(--color-accent-primary)] transition-colors duration-200">
+                <svg id="moon-icon" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21.731 2.269a1.5 1.5 0 00-2.122 0L15 6.878A1.5 1.5 0 0015 9l-2.121 2.122a1.5 1.5 0 000 2.121l5.353 5.353a1.5 1.5 0 002.121 0l4.61-4.61A1.5 1.5 0 0021.73 13.5l-2.12-2.121a1.5 1.5 0 000-2.122L17.5 7.5l-2.122-2.121a1.5 1.5 0 00-2.121 0L11.707 9.586a1.5 1.5 0 000 2.121l5.353 5.353a1.5 1.5 0 002.121 0l2.121-2.121a1.5 1.5 0 000-2.122l-2.12-2.121a1.5 1.5 0 00-2.122 0z"/>
+                </svg>
+                <svg id="sun-icon" class="h-6 w-6 hidden" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 18a6 6 0 100-12 6 6 0 000 12zM2.25 12a9.75 9.75 0 1119.5 0 9.75 9.75 0 01-19.5 0zM12 1a1 1 0 00-1 1v2a1 1 0 002 0V2a1 1 0 00-1-1zM12 21a1 1 0 00-1 1v2a1 1 0 002 0v-2a1 1 0 00-1-1zM4.93 4.93a1 1 0 00-1.414 1.414l1.414 1.414a1 1 0 001.414-1.414L4.93 4.93zm14.14 14.14a1 1 0 00-1.414 1.414l1.414 1.414a1 1 0 001.414-1.414l-1.414-1.414zM1 12a1 1 0 001 1h2a1 1 0 000-2H2a1 1 0 00-1 1zM21 12a1 1 0 001 1h2a1 1 0 000-2h-2a1 1 0 00-1 1zM4.93 19.07a1 1 0 001.414-1.414l-1.414-1.414a1 1 0 00-1.414 1.414l1.414 1.414zM19.07 4.93a1 1 0 00-1.414-1.414l-1.414 1.414a1 1 0 001.414 1.414l1.414-1.414z"/>
+                </svg>
+            </button>
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-8">
-        <div id="pengeluaran-container" class="space-y-8">
-            <div class="bg-white rounded-xl shadow-lg p-6 animate-fade-in-up">
-                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">Catat Pengeluaran Harian 💸</h2>
-                <form id="pengeluaran-form" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        <div id="pengeluaran-container" class="space-y-8 animate-fade-in-up">
+            <div class="bg-[var(--color-bg-secondary)] rounded-2xl shadow-lg p-6 sm:p-8">
+                <h2 class="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-6 border-b border-[var(--color-border)] pb-4">Catat Pengeluaran Harian 💸</h2>
+                <form id="pengeluaran-form" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Anggota Keluarga</label>
-                            <select id="anggota" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 transition duration-300" required>
+                            <label class="block text-sm font-semibold text-[var(--color-text-secondary)] mb-1">Anggota Keluarga</label>
+                            <select id="anggota" class="mt-1 block w-full rounded-xl border-[var(--color-border)] shadow-sm p-3 bg-[var(--color-bg-input)] text-[var(--color-text-primary)] focus:ring-[var(--color-accent-primary)] focus:border-[var(--color-accent-primary)] transition-colors" required>
                                 <option value="Ayah">Ayah</option>
                                 <option value="Ibu">Ibu</option>
                                 <option value="Anak">Anak</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Kategori</label>
-                            <select id="kategori" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 transition duration-300" required>
+                            <label class="block text-sm font-semibold text-[var(--color-text-secondary)] mb-1">Kategori</label>
+                            <select id="kategori" class="mt-1 block w-full rounded-xl border-[var(--color-border)] shadow-sm p-3 bg-[var(--color-bg-input)] text-[var(--color-text-primary)] focus:ring-[var(--color-accent-primary)] focus:border-[var(--color-accent-primary)] transition-colors" required>
                                 <option value="Makanan">Makanan 🍔</option>
                                 <option value="Transportasi">Transportasi 🚗</option>
                                 <option value="Belanja">Belanja 🛍️</option>
@@ -47,79 +62,73 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Nominal (Rp)</label>
-                            <input type="number" id="nominal" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 transition duration-300" placeholder="Contoh: 50000" required>
+                            <label class="block text-sm font-semibold text-[var(--color-text-secondary)] mb-1">Nominal (Rp)</label>
+                            <input type="number" id="nominal" class="mt-1 block w-full rounded-xl border-[var(--color-border)] shadow-sm p-3 bg-[var(--color-bg-input)] text-[var(--color-text-primary)] focus:ring-[var(--color-accent-primary)] focus:border-[var(--color-accent-primary)] transition-colors" placeholder="Contoh: 50000" required>
                         </div>
                         <div class="md:col-span-2 lg:col-span-3">
-                            <label class="block text-sm font-medium text-gray-700">Deskripsi</label>
-                            <input type="text" id="deskripsi" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 transition duration-300" placeholder="Contoh: Beli sayur dan buah" required>
+                            <label class="block text-sm font-semibold text-[var(--color-text-secondary)] mb-1">Deskripsi</label>
+                            <input type="text" id="deskripsi" class="mt-1 block w-full rounded-xl border-[var(--color-border)] shadow-sm p-3 bg-[var(--color-bg-input)] text-[var(--color-text-primary)] focus:ring-[var(--color-accent-primary)] focus:border-[var(--color-accent-primary)] transition-colors" placeholder="Contoh: Beli sayur dan buah" required>
                         </div>
                     </div>
-                    <button type="submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105">
+                    <button type="submit" class="w-full py-3 px-4 border border-transparent rounded-xl shadow-sm text-base font-bold text-white bg-[var(--color-accent-primary)] hover:bg-[var(--color-accent-secondary)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-accent-primary)] transition-all duration-300 transform hover:scale-105">
                         Simpan Pengeluaran
                     </button>
                 </form>
             </div>
             
-            <div class="bg-white rounded-xl shadow-lg p-6 animate-fade-in-up">
-                <h3 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Riwayat Pengeluaran</h3>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+            <div class="bg-[var(--color-bg-secondary)] rounded-2xl shadow-lg p-6 sm:p-8 animate-fade-in-up">
+                <h3 class="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)] mb-4 border-b border-[var(--color-border)] pb-2">Riwayat Pengeluaran</h3>
+                <div class="overflow-x-auto lg:overflow-visible">
+                    <table class="w-full divide-y divide-[var(--color-border)] hidden lg:table">
+                        <thead class="bg-[var(--color-bg-input)]">
                             <tr>
-                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Anggota</th>
-                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
-                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal</th>
-                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
-                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                <th class="px-2 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Tanggal</th>
+                                <th class="px-2 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Anggota</th>
+                                <th class="px-2 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Kategori</th>
+                                <th class="px-2 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Nominal</th>
+                                <th class="px-2 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Deskripsi</th>
+                                <th class="px-2 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="pengeluaran-list" class="bg-white divide-y divide-gray-200">
-                            </tbody>
+                        <tbody id="pengeluaran-list-desktop" class="bg-[var(--color-bg-secondary)] divide-y divide-[var(--color-border)]">
+                        </tbody>
                     </table>
+
+                    <div id="pengeluaran-list-mobile" class="lg:hidden space-y-4">
+                        </div>
                 </div>
             </div>
         </div>
 
-        <div id="status-container" class="hidden space-y-8">
-            <div class="bg-white rounded-xl shadow-lg p-6 animate-fade-in-up">
-                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">Status Anggota Keluarga 🏠</h2>
+        <div id="status-container" class="hidden space-y-8 animate-fade-in-up">
+            <div class="bg-[var(--color-bg-secondary)] rounded-2xl shadow-lg p-6 sm:p-8">
+                <h2 class="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-6 border-b border-[var(--color-border)] pb-4">Status Anggota Keluarga 🏠</h2>
                 <div id="status-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="status-card bg-white rounded-lg shadow-md p-6 flex flex-col items-center space-y-4 transform transition-all duration-300 ring-2 ring-green-500">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-4xl">🏠</span>
-                            <p class="text-xl font-bold text-gray-800">Ayah</p>
-                        </div>
-                        <p class="text-lg text-gray-600">Di Dalam Rumah</p>
-                        <button onclick="toggleStatus('Ayah')" class="w-full py-2 rounded-md font-semibold transition-colors duration-300 bg-red-500 text-white hover:bg-red-600">
-                            Keluar Rumah
-                        </button>
                     </div>
-                    <div class="status-card bg-white rounded-lg shadow-md p-6 flex flex-col items-center space-y-4 transform transition-all duration-300 ring-2 ring-green-500">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-4xl">🏠</span>
-                            <p class="text-xl font-bold text-gray-800">Ibu</p>
-                        </div>
-                        <p class="text-lg text-gray-600">Di Dalam Rumah</p>
-                        <button onclick="toggleStatus('Ibu')" class="w-full py-2 rounded-md font-semibold transition-colors duration-300 bg-red-500 text-white hover:bg-red-600">
-                            Keluar Rumah
-                        </button>
-                    </div>
-                    <div class="status-card bg-white rounded-lg shadow-md p-6 flex flex-col items-center space-y-4 transform transition-all duration-300 ring-2 ring-green-500">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-4xl">🏠</span>
-                            <p class="text-xl font-bold text-gray-800">Anak</p>
-                        </div>
-                        <p class="text-lg text-gray-600">Di Dalam Rumah</p>
-                        <button onclick="toggleStatus('Anak')" class="w-full py-2 rounded-md font-semibold transition-colors duration-300 bg-red-500 text-white hover:bg-red-600">
-                            Keluar Rumah
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
     </main>
+
+    <nav class="fixed inset-x-0 bottom-0 bg-[var(--color-bg-secondary)] shadow-2xl z-50">
+        <div class="flex justify-around items-center h-16">
+            <button id="show-pengeluaran" class="flex flex-col items-center justify-center p-2 text-[var(--color-text-secondary)] transition-colors duration-200 hover:text-[var(--color-accent-primary)]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8v2m0 4v2m-6 2h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span class="text-xs font-medium">Pengeluaran</span>
+            </button>
+            <button id="show-status" class="flex flex-col items-center justify-center p-2 text-[var(--color-text-secondary)] transition-colors duration-200 hover:text-[var(--color-accent-primary)]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span class="text-xs font-medium">Status</span>
+            </button>
+        </div>
+    </nav>
+
+    <footer class="py-4 text-center text-sm text-[var(--color-text-secondary)] mt-auto">
+        &copy; 2024 Manajemen Keluarga. All rights reserved.
+    </footer>
 
     <script src="script/script.js" type="module"></script>
 </body>
