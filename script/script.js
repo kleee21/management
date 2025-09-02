@@ -20,41 +20,66 @@ const database = getDatabase(app);
 
 // --- Elemen HTML dan Pengaturan Tampilan ---
 const pengeluaranContainer = document.getElementById('pengeluaran-container');
+const pemasukanContainer = document.getElementById('pemasukan-container');
+const totalContainer = document.getElementById('total-container');
 const statusContainer = document.getElementById('status-container');
+
 const pengeluaranBtn = document.getElementById('show-pengeluaran');
+const pemasukanBtn = document.getElementById('show-pemasukan');
+const totalBtn = document.getElementById('show-total');
 const statusBtn = document.getElementById('show-status');
+
 const desktopPengeluaranList = document.getElementById('pengeluaran-list-desktop');
 const mobilePengeluaranList = document.getElementById('pengeluaran-list-mobile');
+const desktopPemasukanList = document.getElementById('pemasukan-list-desktop');
+const mobilePemasukanList = document.getElementById('pemasukan-list-mobile');
+const totalList = document.getElementById('total-list');
+
+const allContainers = [pengeluaranContainer, pemasukanContainer, totalContainer, statusContainer];
+const allButtons = [pengeluaranBtn, pemasukanBtn, totalBtn, statusBtn];
 
 // Helper function for button styling
-const setActiveButton = (activeButton, inactiveButton) => {
+const setActiveButton = (activeButton) => {
+    allButtons.forEach(btn => btn.classList.remove('bottom-nav-active'));
     activeButton.classList.add('bottom-nav-active');
-    inactiveButton.classList.remove('bottom-nav-active');
+};
+
+const showContainer = (containerToShow) => {
+    allContainers.forEach(container => container.classList.add('hidden'));
+    containerToShow.classList.remove('hidden');
 };
 
 // Atur tampilan awal
-pengeluaranContainer.classList.remove('hidden');
-statusContainer.classList.add('hidden');
-setActiveButton(pengeluaranBtn, statusBtn);
+showContainer(pengeluaranContainer);
+setActiveButton(pengeluaranBtn);
 
 // Logika pergantian halaman
 pengeluaranBtn.addEventListener('click', () => {
-    pengeluaranContainer.classList.remove('hidden');
-    statusContainer.classList.add('hidden');
-    setActiveButton(pengeluaranBtn, statusBtn);
+    showContainer(pengeluaranContainer);
+    setActiveButton(pengeluaranBtn);
+});
+
+pemasukanBtn.addEventListener('click', () => {
+    showContainer(pemasukanContainer);
+    setActiveButton(pemasukanBtn);
+});
+
+totalBtn.addEventListener('click', () => {
+    showContainer(totalContainer);
+    setActiveButton(totalBtn);
 });
 
 statusBtn.addEventListener('click', () => {
-    statusContainer.classList.remove('hidden');
-    pengeluaranContainer.classList.add('hidden');
-    setActiveButton(statusBtn, pengeluaranBtn);
+    showContainer(statusContainer);
+    setActiveButton(statusBtn);
 });
+
 
 // --- Logika Pengeluaran ---
 const pengeluaranForm = document.getElementById('pengeluaran-form');
 const expensesRef = ref(database, 'pengeluaran');
 
-// Menambah data ke database saat formulir di-submit
+// Menambah data pengeluaran ke database
 if (pengeluaranForm) {
     pengeluaranForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -64,40 +89,23 @@ if (pengeluaranForm) {
         const nominal = parseInt(document.getElementById('nominal').value);
         const deskripsi = document.getElementById('deskripsi').value;
 
-        console.log("Submitting new expense:", { anggota, kategori, nominal, deskripsi });
-
-        const newExpense = {
-            tanggal: today,
-            anggota: anggota,
-            kategori: kategori,
-            nominal: nominal,
-            deskripsi: deskripsi,
-        };
+        const newExpense = { tanggal: today, anggota, kategori, nominal, deskripsi };
         push(expensesRef, newExpense)
-            .then(() => {
-                pengeluaranForm.reset();
-                console.log("Pengeluaran berhasil disimpan!");
-            })
-            .catch((error) => {
-                console.error("Gagal menyimpan pengeluaran: ", error);
-                alert("Gagal menyimpan pengeluaran. Periksa koneksi atau konfigurasi Firebase.");
-            });
+            .then(() => pengeluaranForm.reset())
+            .catch((error) => console.error("Gagal menyimpan pengeluaran: ", error));
     });
 }
 
-// Membaca data real-time dari database
+// Membaca data pengeluaran real-time
 onValue(expensesRef, (snapshot) => {
     const expenses = snapshot.val();
     desktopPengeluaranList.innerHTML = '';
     mobilePengeluaranList.innerHTML = '';
     
     if (expenses) {
-        const sortedExpenses = Object.entries(expenses).sort(([, a], [, b]) => {
-            return new Date(b.tanggal) - new Date(a.tanggal);
-        });
+        const sortedExpenses = Object.entries(expenses).sort(([, a], [, b]) => new Date(b.tanggal) - new Date(a.tanggal));
 
         sortedExpenses.forEach(([id, expense]) => {
-            // Desktop Table View
             const row = document.createElement('tr');
             row.className = 'bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-input)] transition duration-300';
             row.innerHTML = `
@@ -107,45 +115,152 @@ onValue(expensesRef, (snapshot) => {
                 <td class="px-2 py-2 whitespace-nowrap text-xs font-normal text-[var(--color-text-primary)]">Rp ${expense.nominal.toLocaleString('id-ID')}</td>
                 <td class="px-2 py-2 whitespace-nowrap text-xs text-[var(--color-text-secondary)]">${expense.deskripsi}</td>
                 <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-medium">
-                    <button class="text-red-600 hover:text-red-900" onclick="deleteExpense('${id}')">Hapus</button>
+                    <button class="text-red-600 hover:text-red-900" onclick="deleteItem('${id}', 'pengeluaran')">Hapus</button>
                 </td>
             `;
             desktopPengeluaranList.appendChild(row);
 
-            // Mobile Card View
             const card = document.createElement('div');
             card.className = 'responsive-table-row';
             card.innerHTML = `
-                <div class="responsive-table-cell" data-label="Tanggal">
-                    <span class="text-sm font-bold">${expense.tanggal}</span>
-                </div>
-                <div class="responsive-table-cell" data-label="Anggota">
-                    <span class="text-sm text-[var(--color-text-secondary)]">${expense.anggota}</span>
-                </div>
-                <div class="responsive-table-cell" data-label="Kategori">
-                    <span class="text-sm text-[var(--color-text-secondary)]">${expense.kategori}</span>
-                </div>
-                <div class="responsive-table-cell" data-label="Nominal">
-                    <span class="text-sm font-bold text-[var(--color-text-primary)]">Rp ${expense.nominal.toLocaleString('id-ID')}</span>
-                </div>
-                <div class="responsive-table-cell" data-label="Deskripsi">
-                    <span class="text-sm text-[var(--color-text-secondary)]">${expense.deskripsi}</span>
-                </div>
-                <div class="responsive-table-cell" data-label="Aksi">
-                    <button class="text-red-600 hover:text-red-900 text-sm font-medium" onclick="deleteExpense('${id}')">Hapus</button>
-                </div>
+                <div class="responsive-table-cell" data-label="Tanggal"><span class="text-sm font-bold">${expense.tanggal}</span></div>
+                <div class="responsive-table-cell" data-label="Anggota"><span class="text-sm text-[var(--color-text-secondary)]">${expense.anggota}</span></div>
+                <div class="responsive-table-cell" data-label="Kategori"><span class="text-sm text-[var(--color-text-secondary)]">${expense.kategori}</span></div>
+                <div class="responsive-table-cell" data-label="Nominal"><span class="text-sm font-bold text-[var(--color-text-primary)]">Rp ${expense.nominal.toLocaleString('id-ID')}</span></div>
+                <div class="responsive-table-cell" data-label="Deskripsi"><span class="text-sm text-[var(--color-text-secondary)]">${expense.deskripsi}</span></div>
+                <div class="responsive-table-cell" data-label="Aksi"><button class="text-red-600 hover:text-red-900 text-sm font-medium" onclick="deleteItem('${id}', 'pengeluaran')">Hapus</button></div>
             `;
             mobilePengeluaranList.appendChild(card);
         });
     }
 });
 
+
+// --- Logika Pemasukan ---
+const pemasukanForm = document.getElementById('pemasukan-form');
+const incomeRef = ref(database, 'pemasukan');
+const anggotaPemasukanSelect = document.getElementById('anggota-pemasukan');
+
+// Menambah data pemasukan ke database
+if (pemasukanForm) {
+    pemasukanForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const today = new Date().toISOString().split('T')[0];
+        const anggota = anggotaPemasukanSelect.value;
+        const sumber = document.getElementById('sumber-pemasukan').value;
+        const nominal = parseInt(document.getElementById('nominal-pemasukan').value);
+
+        const newIncome = { tanggal: today, anggota, sumber, nominal };
+        push(incomeRef, newIncome)
+            .then(() => pemasukanForm.reset())
+            .catch((error) => console.error("Gagal menyimpan pemasukan: ", error));
+    });
+}
+
+// Membaca data pemasukan real-time
+onValue(incomeRef, (snapshot) => {
+    const incomes = snapshot.val();
+    desktopPemasukanList.innerHTML = '';
+    mobilePemasukanList.innerHTML = '';
+    
+    if (incomes) {
+        const sortedIncomes = Object.entries(incomes).sort(([, a], [, b]) => new Date(b.tanggal) - new Date(a.tanggal));
+
+        sortedIncomes.forEach(([id, income]) => {
+            const row = document.createElement('tr');
+            row.className = 'bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-input)] transition duration-300';
+            row.innerHTML = `
+                <td class="px-2 py-2 whitespace-nowrap text-xs text-[var(--color-text-secondary)]">${income.tanggal}</td>
+                <td class="px-2 py-2 whitespace-nowrap text-xs text-[var(--color-text-secondary)]">${income.anggota}</td>
+                <td class="px-2 py-2 whitespace-nowrap text-xs text-[var(--color-text-secondary)]">${income.sumber}</td>
+                <td class="px-2 py-2 whitespace-nowrap text-xs font-normal text-[var(--color-text-primary)]">Rp ${income.nominal.toLocaleString('id-ID')}</td>
+                <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-medium">
+                    <button class="text-red-600 hover:text-red-900" onclick="deleteItem('${id}', 'pemasukan')">Hapus</button>
+                </td>
+            `;
+            desktopPemasukanList.appendChild(row);
+
+            const card = document.createElement('div');
+            card.className = 'responsive-table-row';
+            card.innerHTML = `
+                <div class="responsive-table-cell" data-label="Tanggal"><span class="text-sm font-bold">${income.tanggal}</span></div>
+                <div class="responsive-table-cell" data-label="Anggota"><span class="text-sm text-[var(--color-text-secondary)]">${income.anggota}</span></div>
+                <div class="responsive-table-cell" data-label="Sumber"><span class="text-sm text-[var(--color-text-secondary)]">${income.sumber}</span></div>
+                <div class="responsive-table-cell" data-label="Nominal"><span class="text-sm font-bold text-[var(--color-text-primary)]">Rp ${income.nominal.toLocaleString('id-ID')}</span></div>
+                <div class="responsive-table-cell" data-label="Aksi"><button class="text-red-600 hover:text-red-900 text-sm font-medium" onclick="deleteItem('${id}', 'pemasukan')">Hapus</button></div>
+            `;
+            mobilePemasukanList.appendChild(card);
+        });
+    }
+});
+
 // Fungsi untuk menghapus data
-window.deleteExpense = (id) => {
-    if (confirm('Apakah Anda yakin ingin menghapus pengeluaran ini?')) {
-        remove(ref(database, `pengeluaran/${id}`));
+window.deleteItem = (id, type) => {
+    if (confirm(`Apakah Anda yakin ingin menghapus ${type === 'pengeluaran' ? 'pengeluaran' : 'pemasukan'} ini?`)) {
+        remove(ref(database, `${type}/${id}`));
     }
 };
+
+// --- Logika Total Bulanan ---
+const updateMonthlyTotals = (expenses, incomes) => {
+    const monthlyData = {};
+
+    // Proses pengeluaran
+    if (expenses) {
+        Object.values(expenses).forEach(expense => {
+            const month = expense.tanggal.substring(0, 7);
+            if (!monthlyData[month]) {
+                monthlyData[month] = { expenses: 0, incomes: 0 };
+            }
+            monthlyData[month].expenses += expense.nominal;
+        });
+    }
+
+    // Proses pemasukan
+    if (incomes) {
+        Object.values(incomes).forEach(income => {
+            const month = income.tanggal.substring(0, 7);
+            if (!monthlyData[month]) {
+                monthlyData[month] = { expenses: 0, incomes: 0 };
+            }
+            monthlyData[month].incomes += income.nominal;
+        });
+    }
+
+    const sortedMonths = Object.keys(monthlyData).sort().reverse();
+    totalList.innerHTML = '';
+
+    if (sortedMonths.length > 0) {
+        sortedMonths.forEach(month => {
+            const data = monthlyData[month];
+            const balance = data.incomes - data.expenses;
+            const balanceClass = balance >= 0 ? 'total-positive' : 'total-negative';
+
+            const card = document.createElement('div');
+            card.className = 'bg-[var(--color-bg-input)] rounded-xl p-4 shadow-md';
+            card.innerHTML = `
+                <h4 class="text-lg font-bold text-[var(--color-text-primary)]">${month}</h4>
+                <p class="text-[var(--color-text-secondary)]">Pengeluaran: <span class="text-[var(--color-status-out)] font-bold">Rp ${data.expenses.toLocaleString('id-ID')}</span></p>
+                <p class="text-[var(--color-text-secondary)]">Pemasukan: <span class="text-[var(--color-status-in)] font-bold">Rp ${data.incomes.toLocaleString('id-ID')}</span></p>
+                <p class="mt-2 text-md font-bold">
+                    Saldo: <span class="${balanceClass}">Rp ${balance.toLocaleString('id-ID')}</span>
+                </p>
+            `;
+            totalList.appendChild(card);
+        });
+    } else {
+        totalList.innerHTML = `<p class="text-center text-[var(--color-text-secondary)]">Belum ada data untuk ditampilkan.</p>`;
+    }
+};
+
+// Gabungkan listener untuk pengeluaran dan pemasukan
+onValue(expensesRef, (expensesSnapshot) => {
+    onValue(incomeRef, (incomesSnapshot) => {
+        const expenses = expensesSnapshot.val();
+        const incomes = incomesSnapshot.val();
+        updateMonthlyTotals(expenses, incomes);
+    });
+});
 
 // --- Logika Status Anggota & Tambah Anggota ---
 const statusGrid = document.getElementById('status-grid');
@@ -159,16 +274,22 @@ const statusRef = ref(database, 'statusAnggota');
 const updateUI = (anggotaList) => {
     // Bersihkan dropdown dan status grid
     anggotaSelect.innerHTML = '';
+    anggotaPemasukanSelect.innerHTML = '';
     if (statusGrid) {
         statusGrid.innerHTML = '';
     }
 
     // Isi ulang dropdown
     anggotaList.forEach(anggota => {
-        const option = document.createElement('option');
-        option.value = anggota;
-        option.textContent = anggota;
-        anggotaSelect.appendChild(option);
+        const option1 = document.createElement('option');
+        option1.value = anggota;
+        option1.textContent = anggota;
+        anggotaSelect.appendChild(option1);
+
+        const option2 = document.createElement('option');
+        option2.value = anggota;
+        option2.textContent = anggota;
+        anggotaPemasukanSelect.appendChild(option2);
     });
 
     // Buat ulang status grid
@@ -177,10 +298,10 @@ const updateUI = (anggotaList) => {
             const statusData = snapshot.val();
             const status = statusData && statusData.status ? statusData.status : 'Di Dalam';
             const reason = statusData && statusData.reason ? statusData.reason : '';
-
+            
             const ringColor = status === 'Di Dalam' ? 'ring-[var(--color-status-in)]' : 'ring-[var(--color-status-out)]';
-            const buttonClass = status === 'Di Dalam'
-                ? 'bg-[var(--color-status-out)] text-white hover:bg-[var(--color-status-out)]'
+            const buttonClass = status === 'Di Dalam' 
+                ? 'bg-[var(--color-status-out)] text-white hover:bg-[var(--color-status-out)]' 
                 : 'bg-[var(--color-status-in)] text-white hover:bg-[var(--color-status-in)]';
 
             let existingCard = document.getElementById(`status-card-${anggota.replace(/\s+/g, '-')}`);
@@ -209,7 +330,6 @@ const updateUI = (anggotaList) => {
         });
     });
 };
-
 
 // Tambah anggota keluarga baru
 if (tambahAnggotaForm) {
@@ -273,10 +393,7 @@ window.toggleStatus = async (anggota) => {
             newReason = '';
         }
 
-        await set(anggotaStatusRef, {
-            status: newStatus,
-            reason: newReason
-        });
+        await set(anggotaStatusRef, { status: newStatus, reason: newReason });
         console.log("Status berhasil diperbarui!");
     } catch (error) {
         console.error("Gagal memperbarui status: ", error);
